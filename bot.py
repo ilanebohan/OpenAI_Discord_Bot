@@ -1,10 +1,14 @@
 from cmath import log
 import discord
 from discord.ext import commands
-import OpenAI
+from requests import request
+import OpenAIFILE
+
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix="!")
+
+sarcastic_mode = False
 
 @client.event
 async def on_ready():
@@ -13,6 +17,40 @@ async def on_ready():
 @client.command()
 async def hello(ctx): # Send "Hi" message to the channel (Usable by anyone) -> Respond to !hello command    
     await ctx.send("Hi")
+
+@client.command()
+async def sqlHelp(ctx): # Send "SQL Help" message to the channel (Usable by anyone) -> Respond to !sqlHelp command
+    await ctx.send("Example of text : 'find all users who live in California and have over 1000 credits' -> OpenAI gonna send : 'SELECT * FROM users WHERE state = 'CA' AND credits > 1000'")
+
+@client.command()
+async def sqlRequest(ctx): # Send the requested SQL request to the channel (Usable by anyone) -> Respond to !sqlRequest command
+    if ctx.message.author != client.user and ctx.message.channel.name == "bot":
+        chat_log = ""
+        request = ctx.message.content.replace("!sqlRequest ", "")
+        answer = OpenAIFILE.create_sql_request(request) # Ask the question and get the answer by OpenAI
+        chat_log = OpenAIFILE.append_interaction_to_chat_log(request, answer,chat_log) # Append the question and answer to the chat log
+        await ctx.send(answer)
+        send_author_and_content_to_logs(str(ctx.message.author.id) + 'User : ' + str(ctx.message.author) + 'Message : ' + str(ctx.message.content))
+
+@client.command()
+async def sarcastic_enabled(ctx):
+    global sarcastic_mode
+    if (sarcastic_mode == False and OpenAIFILE.ai_sarcastic_mode == False):
+        sarcastic_mode = True
+        OpenAIFILE.ai_sarcastic_mode = True
+        await ctx.send("Sarcastic Mode enabled")
+    else:
+        await ctx.send("Sarcastic Mode already enabled")
+
+@client.command()
+async def sarcastic_disabled(ctx):
+    global sarcastic_mode
+    if (sarcastic_mode == True and OpenAIFILE.ai_sarcastic_mode == True):
+        sarcastic_mode = False
+        OpenAIFILE.ai_sarcastic_mode = False
+        await ctx.send("Sarcastic Mode disabled")
+    else:
+        await ctx.send("Sarcastic Mode already disabled")
 
 @client.command()
 @commands.is_owner()
@@ -36,8 +74,7 @@ async def count_request(ctx): # Send the number of requests logged in (Only used
 @commands.is_owner()
 async def shutdown(context): # Shutdown the bot (Only used by the bot owner) -> Respond to !shutdown command
     exit()
-    
-    
+
 def send_author_and_content_to_logs(Content): # Send the author and content of the message to the logs
     list_user.append(Content) # Append the user ID, user and message to list_user
     f = open("log_user.txt", "w") # Open the file to write the logs
@@ -56,12 +93,16 @@ async def on_message(message): # Event triggered when a message is sent in the c
     if message.author != client.user and message.channel.name == "bot" and message.content.startswith("!") == False: 
         chat_log = ""
         question = message.content
-        answer = OpenAI.askQuestion(question, chat_log) # Ask the question and get the answer by OpenAI
-        chat_log = OpenAI.append_interaction_to_chat_log(question, answer,chat_log) # Append the question and answer to the chat log
+        print (sarcastic_mode)
+        if (sarcastic_mode == True):
+            answer = OpenAIFILE.sarcastic_response(question) # Ask the question and get the answer by OpenAI
+        if (sarcastic_mode == False):
+            answer = OpenAIFILE.askQuestion(question) # Ask the question and get the answer by OpenAI
+        chat_log = OpenAIFILE.append_interaction_to_chat_log(question, answer,chat_log) # Append the question and answer to the chat log
         await message.channel.send(answer)
         send_author_and_content_to_logs(str(message.author.id) + 'User : ' + str(message.author) + 'Message : ' + str(message.content))
     if message.content.startswith("!") == True: # If the message is a command
         await client.process_commands(message) # Process the command
 
 
-client.run("Your Discord Key") # Bot token
+client.run("Your discord key") # Bot token

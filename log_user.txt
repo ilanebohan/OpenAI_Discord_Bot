@@ -1,1 +1,2 @@
-
+387717830965198850User : Rize#1000Message : !sqlRequest find all users who live in California and have over 1000 credits
+387717830965198850User : Rize#1000Message : !sqlRequest find all country who have over 100000 inhabitants
