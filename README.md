@@ -26,6 +26,7 @@ Commands :
 
 
 sarcastic mode* : OpenAI is giving sarcastic type of response 
+
 Example (Normal mode) : 
 - You : "What  does HTML stand for ?"
 - AI : "Hypertext Markup Langage"
