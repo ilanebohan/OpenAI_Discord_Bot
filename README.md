@@ -13,9 +13,11 @@ Commands :
 !hello : Just say hello lol
 
 !sqlHelp : See how to use the !sqlRequest {request}  command
+
 !sqlRequest {your request} : Translate natural langage to an SQL Request (use !sqlHelp for more infos)
 
 !sarcastic_enabled = Enable sarcastic mode*
+
 !sarcastic_disabled = Disable sarcastic mode*
 
 !log (admin only) : See the logs (log_user.txt)
